@@ -16,3 +16,6 @@ spring:
         max-idle: 8
         #逐出扫描的时间间隔(毫秒) 如果为负数,则不运行逐出线程, 默认-1
         time-between-eviction-runs: 30000
+
+swagger:
+    enabled: true

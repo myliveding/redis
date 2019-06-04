@@ -1,4 +1,4 @@
-package com.dzr.study.config;
+package cn.dzr.study.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
