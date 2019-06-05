@@ -1,6 +1,8 @@
 package cn.dzr.study.config;
 
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -14,18 +16,27 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
  */
 
 @Configuration
+@ConfigurationProperties(prefix = "spring.redisson")
+@Data
 public class RedisConfig {
 
-    @Autowired
-    private RedisTemplate redisTemplate;
+    private int timeout = 3000;
 
-    @Bean
-    public RedisTemplate redisTemplateInit() {
-        // key序列化
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        //val实例化
-        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
-        return redisTemplate;
-    }
+    private String address;
+
+    private String password;
+
+    private int connectionPoolSize = 64;
+
+    private int connectionMinimumIdleSize = 10;
+
+    private int slaveConnectionPoolSize = 250;
+
+    private int masterConnectionPoolSize = 250;
+
+    private String[] sentinelAddresses;
+
+    private String masterName;
+
 
 }
