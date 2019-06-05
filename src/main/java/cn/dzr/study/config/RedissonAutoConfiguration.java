@@ -32,40 +32,40 @@ public class RedissonAutoConfiguration {
     /**
      * 哨兵模式自动装配
      */
-//    @Bean
-//    @ConditionalOnProperty(name="spring.redisson.masterName")
-//    RedissonClient redissonSentinel() {
-//        Config config = new Config();
-//        SentinelServersConfig serverConfig = config.useSentinelServers().addSentinelAddress(redisConfig.getSentinelAddresses())
-//                .setMasterName(redisConfig.getMasterName())
-//                .setTimeout(redisConfig.getTimeout())
-//                .setMasterConnectionPoolSize(redisConfig.getMasterConnectionPoolSize())
-//                .setSlaveConnectionPoolSize(redisConfig.getSlaveConnectionPoolSize());
-//
-//        if(!StringUtils.isEmpty(redisConfig.getPassword())) {
-//            serverConfig.setPassword(redisConfig.getPassword());
-//        }
-//        return Redisson.create(config);
-//    }
-
-    /**
-     * 单机模式自动装配
-     */
     @Bean
-    @ConditionalOnProperty(name = "spring.redisson.address")
-    RedissonClient redissonSingle() {
+    @ConditionalOnProperty(name = "spring.redisson.master-name")
+    RedissonClient redissonSentinel() {
         Config config = new Config();
-        SingleServerConfig serverConfig = config.useSingleServer()
-                .setAddress(redisConfig.getAddress())
+        SentinelServersConfig serverConfig = config.useSentinelServers().addSentinelAddress(redisConfig.getSentinelAddresses())
+                .setMasterName(redisConfig.getMasterName())
                 .setTimeout(redisConfig.getTimeout())
-                .setConnectionPoolSize(redisConfig.getConnectionPoolSize())
-                .setConnectionMinimumIdleSize(redisConfig.getConnectionMinimumIdleSize());
+                .setMasterConnectionPoolSize(redisConfig.getMasterConnectionPoolSize())
+                .setSlaveConnectionPoolSize(redisConfig.getSlaveConnectionPoolSize());
 
         if (!StringUtils.isEmpty(redisConfig.getPassword())) {
             serverConfig.setPassword(redisConfig.getPassword());
         }
         return Redisson.create(config);
     }
+
+//    /**
+//     * 单机模式自动装配
+//     */
+//    @Bean
+//    @ConditionalOnProperty(name = "spring.redisson.address")
+//    RedissonClient redissonSingle() {
+//        Config config = new Config();
+//        SingleServerConfig serverConfig = config.useSingleServer()
+//                .setAddress(redisConfig.getAddress())
+//                .setTimeout(redisConfig.getTimeout())
+//                .setConnectionPoolSize(redisConfig.getConnectionPoolSize())
+//                .setConnectionMinimumIdleSize(redisConfig.getConnectionMinimumIdleSize());
+//
+//        if (!StringUtils.isEmpty(redisConfig.getPassword())) {
+//            serverConfig.setPassword(redisConfig.getPassword());
+//        }
+//        return Redisson.create(config);
+//    }
 
     /**
      * 装配locker类，并将实例注入到RedissLockUtil中

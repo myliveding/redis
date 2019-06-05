@@ -1,13 +1,13 @@
 spring:
 
   redisson:
-    password: xbz_redis@2019
+    password:
 
     #单机
-    address: redis://47.110.84.21:6379
-    #哨兵
-#    masterName: mymaster
-#    sentinelAddresses: redis://127.0.0.1:6379,redis://127.0.0.1:6380,redis://127.0.0.1:6381
+#    address: redis://47.110.84.21:6379
+    #哨兵 redis的地址  哨兵的端口号
+    master-name: mymaster
+    sentinelAddresses: redis://127.0.0.1:26379,redis://127.0.0.1:26380,redis://127.0.0.1:26381
 
 swagger:
     enabled: true
