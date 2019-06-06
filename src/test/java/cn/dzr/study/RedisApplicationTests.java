@@ -17,19 +17,19 @@ public class RedisApplicationTests {
     @Autowired
     private RedisTemplate redisTemplate;
 
+    @Autowired
+    private RedisTemplate redisTemplateForListen;
+
     @Test
     public void contextLoads() {
 
-//		redisTemplate.opsForValue().set("redis", "redis");
-//		redisTemplate.expire("redis", 1, TimeUnit.MINUTES);
-//		System.err.println(redisTemplate.opsForValue().get("redis"));
+        redisTemplate.opsForValue().set("redis", "redis");
+        redisTemplate.expire("redis", 1, TimeUnit.MINUTES);
+        System.err.println(redisTemplate.opsForValue().get("redis"));
 
-        redisTemplate.opsForList().rightPush("list", 1);
-        System.err.println(redisTemplate.hasKey("list"));
-        redisTemplate.expire("list", 60, TimeUnit.SECONDS);
-
-        List<Integer> list = redisTemplate.opsForList().range("list", 0, -1);
-        list.forEach(System.err::println);
+        redisTemplateForListen.opsForValue().set("redis", "redis");
+        redisTemplateForListen.expire("redis", 1, TimeUnit.MINUTES);
+        System.err.println(redisTemplateForListen.opsForValue().get("redis"));
     }
 
 }
