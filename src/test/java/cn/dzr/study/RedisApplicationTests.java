@@ -9,7 +9,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringRunner.class)
@@ -20,23 +19,14 @@ public class RedisApplicationTests {
     private RedisTemplate redisTemplate;
 
     @Autowired
-    private RedisTemplate redisTemplateForListen;
-
-    @Autowired
     private DistributedLocker distributedLocker;
 
 
     @Test
     public void contextLoadsRedis() {
-
         redisTemplate.opsForValue().set("redis", "redis");
         redisTemplate.expire("redis", 1, TimeUnit.MINUTES);
         System.err.println(redisTemplate.opsForValue().get("redis"));
-
-        redisTemplateForListen.opsForValue().set("redis", "redis");
-        redisTemplateForListen.expire("redis", 1, TimeUnit.MINUTES);
-        System.err.println(redisTemplateForListen.opsForValue().get("redis"));
-
     }
 
 

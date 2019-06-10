@@ -5,11 +5,10 @@ import cn.dzr.study.service.impl.RedissonDistributedLocker;
 import cn.dzr.study.util.RedissLockUtil;
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
+import org.redisson.config.ClusterServersConfig;
 import org.redisson.config.Config;
-import org.redisson.config.SingleServerConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,46 +28,24 @@ public class RedissonAutoConfiguration {
     private RedisConfig redisConfig;
 
     /**
-     * 哨兵模式自动装配
-     */
-//    @Bean
-//    @ConditionalOnProperty(name="spring.redisson.masterName")
-//    RedissonClient redissonSentinel() {
-//        Config config = new Config();
-//        SentinelServersConfig serverConfig = config.useSentinelServers().addSentinelAddress(redisConfig.getSentinelAddresses())
-//                .setMasterName(redisConfig.getMasterName())
-//                .setTimeout(redisConfig.getTimeout())
-//                .setMasterConnectionPoolSize(redisConfig.getMasterConnectionPoolSize())
-//                .setSlaveConnectionPoolSize(redisConfig.getSlaveConnectionPoolSize());
-//
-//        if(!StringUtils.isEmpty(redisConfig.getPassword())) {
-//            serverConfig.setPassword(redisConfig.getPassword());
-//        }
-//        return Redisson.create(config);
-//    }
-
-    /**
      * 单机模式自动装配
      */
-    @Bean
-    RedissonClient redissonSingle() {
+    @Bean(destroyMethod = "shutdown")
+    RedissonClient redissonCluster() {
         Config config = new Config();
-        SingleServerConfig serverConfig = config.useSingleServer()
-                .setAddress("redis://" + redisConfig.getHost() + ":" + redisConfig.getPort())
-                .setTimeout(redisConfig.getTimeout());
-
+        ClusterServersConfig serverConfig = config.useClusterServers()
+                .setScanInterval(2000) // 集群状态扫描间隔时间，单位是毫秒
+                //可以用"rediss://"来启用SSL连接
+                .addNodeAddress(redisConfig.getNodes());
         if (!StringUtils.isEmpty(redisConfig.getPassword())) {
             serverConfig.setPassword(redisConfig.getPassword());
         }
-
-//        serverConfig.setDatabase(2);
         return Redisson.create(config);
+
     }
 
     /**
      * 装配locker类，并将实例注入到RedissLockUtil中
-     *
-     * @return
      */
     @Bean
     DistributedLocker distributedLocker(RedissonClient redissonClient) {

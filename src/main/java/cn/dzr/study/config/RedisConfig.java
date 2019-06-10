@@ -2,13 +2,20 @@ package cn.dzr.study.config;
 
 import lombok.Data;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.data.redis.RedisAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.MapPropertySource;
+import org.springframework.data.redis.connection.RedisClusterConfiguration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.RedisPassword;
-import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.RedisNode;
 import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettucePoolingClientConfiguration;
@@ -17,6 +24,10 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @Auther: dingzr
@@ -24,23 +35,21 @@ import java.time.Duration;
  * @Description: 解决存储时key和value的乱码
  */
 
-@Data
 @Configuration
-@ConfigurationProperties(prefix = "spring.redis")
+@AutoConfigureAfter(RedisAutoConfiguration.class)
 public class RedisConfig {
 
-    private String host;
+    @Value("${spring.redis.cluster.nodes}")
+    private String nodes;
 
-    private Integer port;
-
+    @Value("${spring.redis.password}")
     private String password;
 
+    @Value("${spring.redis.timeout}")
     private Integer timeout;
 
-    private Integer database;
-
-    private Integer databaseListen;
-
+    @Value("${spring.redis.cluster.max-redirects}")
+    private Integer maxRedirects;
 
     @Bean
     @ConfigurationProperties(prefix = "spring.redis.lettuce.pool")
@@ -50,26 +59,40 @@ public class RedisConfig {
     }
 
     /**
-     * 组装redis工厂
+     * 组装redis工厂     集群redis
      */
-    private LettuceConnectionFactory getLettuceConnectionFactory(GenericObjectPoolConfig genericObjectPoolConfig, Integer database) {
-        RedisStandaloneConfiguration redisStandaloneConfiguration = new RedisStandaloneConfiguration();
-        redisStandaloneConfiguration.setDatabase(database);
-        redisStandaloneConfiguration.setHostName(host);
-        redisStandaloneConfiguration.setPort(port);
-        redisStandaloneConfiguration.setPassword(RedisPassword.of(password));
+    private LettuceConnectionFactory getLettuceConnectionFactory(GenericObjectPoolConfig genericObjectPoolConfig) {
+
+
+        RedisClusterConfiguration redisClusterConfiguration = new RedisClusterConfiguration();
+        Set<RedisNode> nodesSet = new HashSet<>();
+        String[] hosts = nodes.split("-");
+        for (String h : hosts) {
+            h = h.replaceAll("\\s", "").replaceAll("\n", "");
+            if (!"".equals(h)) {
+                String host = h.split(":")[0];
+                int port = Integer.valueOf(h.split(":")[1]);
+                nodesSet.add(new RedisNode(host, port));
+            }
+        }
+        redisClusterConfiguration.setClusterNodes(nodesSet);
+        // 跨集群执行命令时要遵循的最大重定向数量
+        redisClusterConfiguration.setMaxRedirects(maxRedirects);
+        redisClusterConfiguration.setPassword(password);
 
         LettuceClientConfiguration clientConfig = LettucePoolingClientConfiguration.builder()
                 .commandTimeout(Duration.ofMillis(timeout))
                 .poolConfig(genericObjectPoolConfig)
                 .build();
-        return new LettuceConnectionFactory(redisStandaloneConfiguration, clientConfig);
+        return new LettuceConnectionFactory(redisClusterConfiguration, clientConfig);
     }
+
 
     @Bean(name = "redisTemplate")
     public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory(lettucePool()));
+//        redisTemplate.setConnectionFactory(myLettuceConnectionFactory());
         setSerializer(redisTemplate);
         redisTemplate.afterPropertiesSet();
         return redisTemplate;
@@ -77,22 +100,7 @@ public class RedisConfig {
 
     @Bean
     public RedisConnectionFactory redisConnectionFactory(GenericObjectPoolConfig genericObjectPoolConfig) {
-        return getLettuceConnectionFactory(genericObjectPoolConfig, database);
-    }
-
-    @Bean(name = "redisTemplateForListen")
-    public RedisTemplate<String, Object> redisTemplateForListen() {
-        RedisTemplate<String, Object> redisTemplateForListen = new RedisTemplate<>();
-        redisTemplateForListen.setConnectionFactory(redisConnectionFactoryListen(lettucePool()));
-        setSerializer(redisTemplateForListen);
-        redisTemplateForListen.afterPropertiesSet();
-        return redisTemplateForListen;
-    }
-
-
-    @Bean
-    public RedisConnectionFactory redisConnectionFactoryListen(GenericObjectPoolConfig genericObjectPoolConfig) {
-        return getLettuceConnectionFactory(genericObjectPoolConfig, databaseListen);
+        return getLettuceConnectionFactory(genericObjectPoolConfig);
     }
 
     private void setSerializer(RedisTemplate<String, Object> template) {

@@ -1,14 +1,13 @@
 spring:
   redis:
+    cluster:
+      nodes:
+        - 127.0.0.1:6379
+        - 127.0.0.1:6380
+        - 127.0.0.1:6381
+      max-redirects: 3 # 获取失败 最大重定向次数
     password:
-    host: 127.0.0.1
-    port: 6379
     timeout: 15000
-    database: 0
-    databaseListen: 1
-    # Connection URL, will override host, port and password (user will be ignored), e.g. redis://user:password@example.com:6379
-    #url:
-    ssl: false
     lettuce:
       pool:
         max-active: 8
