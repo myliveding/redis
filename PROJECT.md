@@ -8,13 +8,15 @@ luttuce 主要用于rdis基本操作的场景以及键空间通知，因为redis
 luttuce 和 redisson都是线程安全的，原则上说可以不使用线程池，实际是本着防范于未然这个原则，
 我们还是要加上这个。
 
+## 可以试试
+luttuce和redisson配置文件的合并
+redisson存储的key是乱码的，不知道怎么序列化存储进去，
+可能封装之后锁相关的操作不能自定义序列化（可能是通过配置文件序列化）
 
 ## 疑问
-这个网站上面的问题跟我的差不多，但是一直没有回复：
-https://www.v2ex.com/t/542261
+和单机版一样同样是有那个链接主机强制关闭的问题，猜测可能是服务器的配置和项目的配置有哪些地方不是很和谐
 
-下面是我运行之后的异常信息，但是不报错~
-2019-06-10 14:23:54.901 ERROR 13276 --- [sson-netty-6-24] o.redisson.client.handler.CommandsQueue  : Exception occured. Channel: [id: 0xaa31a78c, L:/127.0.0.1:55217 - R:127.0.0.1/127.0.0.1:6379]
+2019-06-11 17:25:10.931 ERROR 9592 --- [isson-netty-4-1] o.redisson.client.handler.CommandsQueue  : Exception occured. Channel: [id: 0x54ab159c, L:/127.0.0.1:54691 - R:127.0.0.1/127.0.0.1:20002]
 
 java.io.IOException: 远程主机强迫关闭了一个现有的连接。
 	at sun.nio.ch.SocketDispatcher.read0(Native Method)

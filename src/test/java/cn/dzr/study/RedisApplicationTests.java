@@ -1,7 +1,7 @@
 package cn.dzr.study;
 
 import cn.dzr.study.service.DistributedLocker;
-import cn.dzr.study.util.RedissLockUtil;
+import cn.dzr.study.util.RedissonLockUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,13 +35,13 @@ public class RedisApplicationTests {
         String lockKey = "testRedisson";//分布式锁的key
         //执行的业务代码
         try {
-            for (int i = 0; i < 10; i++) {
+//            for (int i = 0; i < 10; i++) {
                 //设置60秒自动释放锁  （默认是30秒自动过期）
-                distributedLocker.lock(lockKey, TimeUnit.SECONDS, 60);
+            distributedLocker.lock(lockKey, TimeUnit.SECONDS, 29);
                 System.err.println("执行业务逻辑...");
-                Thread.sleep(10000);
+            Thread.sleep(1000);
                 distributedLocker.unlock(lockKey); //释放锁
-            }
+//            }
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -54,12 +54,12 @@ public class RedisApplicationTests {
             //执行的业务代码
 //        for (int i = 0; i < 10; i++) {
             //设置60秒自动释放锁  （默认是30秒自动过期）
-            RedissLockUtil.lock(lockKey, TimeUnit.SECONDS, 60);
+            RedissonLockUtil.lock(lockKey, TimeUnit.SECONDS, 29);
             System.err.println("执行业务逻辑...");
 
-            Thread.sleep(3000);
+            Thread.sleep(1000);
 
-            RedissLockUtil.unlock(lockKey); //释放锁
+            RedissonLockUtil.unlock(lockKey); //释放锁
 //        }
         } catch (Exception e) {
             e.printStackTrace();

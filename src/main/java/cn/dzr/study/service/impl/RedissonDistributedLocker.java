@@ -3,6 +3,8 @@ package cn.dzr.study.service.impl;
 import cn.dzr.study.service.DistributedLocker;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
 
@@ -11,6 +13,7 @@ import java.util.concurrent.TimeUnit;
  * @Date: 2019/6/5 10:57
  * @Description:
  */
+
 public class RedissonDistributedLocker implements DistributedLocker {
 
     private RedissonClient redissonClient;
